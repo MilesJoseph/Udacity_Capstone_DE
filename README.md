@@ -4,6 +4,4 @@
 
   ## Parameters
 
-  I am using airflow running in a docker container for scheduling ETL tasks.
-
-  I am using airflow managed on Amazon. 
+  I am using airflow within an ec2 cluster. 
