@@ -6,21 +6,24 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator, BranchPythonOperator
 from airflow.models import Variable
 from datetime import datetime, timedelta
-#from airflow.operators.custom_plugin import ETLDAGCheckCompleteSensor
+from airflow.operators.custom_plugin import ETLDAGCheckCompleteSensor
+
 
 default_args = {
-  'owner': 'airflow',
-  'depends_on_past': False,
-  'start_date': datetime(2016, 1, 1),
-  'retries': 0,
-  'email_on_failure': False,
-  'email_on_retry': False,
-  'provide_context': True
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': datetime(2016, 1, 1),
+    'retries': 0,
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'provide_context': True
 }
 
+# Initialize the DAG
 dag = DAG('dag_cluster', concurrency=1, schedule_interval=None, default_args=default_args)
 region = emr.get_region()
 emr.client(region_name=region)
+
 
 # Creates an EMR cluster
 def create_emr(**kwargs):
@@ -44,6 +47,7 @@ def terminate_emr(**kwargs):
     Variable.set("dag_analytics_state", "na")
     Variable.set("dag_normalize_state", "na")
 
+#
 create_cluster = PythonOperator(
     task_id='create_cluster',
     python_callable=create_emr,
@@ -60,6 +64,12 @@ terminate_cluster = PythonOperator(
     trigger_rule='all_done',
     dag=dag)
 
+etl_dag_check_complete_task = ETLDAGCheckCompleteSensor(
+    task_id='etl_dag_check_complete',
+    poke_interval=120,
+    dag=dag)
 
+#
 create_cluster >> wait_for_cluster_completion
-wait_for_cluster_completion >> terminate_cluster
+wait_for_cluster_completion >> etl_dag_check_complete_task
+etl_dag_check_complete_task >> terminate_cluster
