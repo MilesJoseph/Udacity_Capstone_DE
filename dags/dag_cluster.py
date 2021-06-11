@@ -7,6 +7,22 @@ from airflow.contrib.operators.emr_add_steps_operator import EmrAddStepsOperator
 from airflow.contrib.operators.emr_terminate_job_flow_operator import (
     EmrTerminateJobFlowOperator,
 )
+BUCKET_NAME = "s3://airflow-server-environmentbucket-epnkhc131or/dags/transform/"
+
+SPARK_STEPS = [ # Note the params values are supplied to the operator
+    {
+        "Name": "Move raw data from S3 to HDFS",
+        "ActionOnFailure": "CANCEL_AND_WAIT",
+        "HadoopJarStep": {
+            "Jar": "command-runner.jar",
+            "Args": [
+                "s3-dist-cp",
+                "--src=s3://{{ params.BUCKET_NAME }}/data",
+                "--dest=/movie",
+            ],
+        },
+    },
+]
 
 JOB_FLOW_OVERRIDES = {
     "Name": "Immigration Cluster",
