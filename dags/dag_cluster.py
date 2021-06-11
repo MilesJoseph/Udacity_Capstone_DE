@@ -1,75 +1,57 @@
-import lib.emr_lib as emr
-import os
-import logging
+from airflow.hooks.S3_hook import S3Hook
+from airflow.operators import PythonOperator
+from airflow.contrib.operators.emr_create_job_flow_operator import (
+    EmrCreateJobFlowOperator,
+)
+from airflow.contrib.operators.emr_add_steps_operator import EmrAddStepsOperator
+from airflow.contrib.operators.emr_terminate_job_flow_operator import (
+    EmrTerminateJobFlowOperator,
+)
 
-from airflow import DAG
-from airflow.operators.python_operator import PythonOperator, BranchPythonOperator
-from airflow.models import Variable
-from datetime import datetime, timedelta
-from airflow.operators.custom_plugin import ETLDAGCheckCompleteSensor
-
-
-default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': datetime(2016, 1, 1),
-    'retries': 0,
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'provide_context': True
+JOB_FLOW_OVERRIDES = {
+    "Name": "Immigration Cluster",
+    "ReleaseLabel": "emr-5.29.0",
+    "Applications": [{"Name": "Hadoop"}, {"Name": "Spark"}], # We want our EMR cluster to have HDFS and Spark
+    "Configurations": [
+        {
+            "Classification": "spark-env",
+            "Configurations": [
+                {
+                    "Classification": "export",
+                    "Properties": {"PYSPARK_PYTHON": "/usr/bin/python3"}, # by default EMR uses py2, change it to py3
+                }
+            ],
+        }
+    ],
+    "Instances": {
+        "InstanceGroups": [
+            {
+                "Name": "Master node",
+                "Market": "SPOT",
+                "InstanceRole": "MASTER",
+                "InstanceType": "m4.xlarge",
+                "InstanceCount": 1,
+            },
+            {
+                "Name": "Core - 2",
+                "Market": "SPOT", # Spot instances are a "use as available" instances
+                "InstanceRole": "CORE",
+                "InstanceType": "m4.xlarge",
+                "InstanceCount": 2,
+            },
+        ],
+        "KeepJobFlowAliveWhenNoSteps": True,
+        "TerminationProtected": False, # this lets us programmatically terminate the cluster
+    },
+    "JobFlowRole": "EMR_EC2_DefaultRole",
+    "ServiceRole": "EMR_DefaultRole",
 }
 
-# Initialize the DAG
-dag = DAG('dag_cluster', concurrency=1, schedule_interval=None, default_args=default_args)
-region = emr.get_region()
-emr.client(region_name=region)
 
-
-# Creates an EMR cluster
-def create_emr(**kwargs):
-    cluster_id = emr.create_cluster(region_name=region, cluster_name='cluster', num_core_nodes=2)
-    Variable.set("cluster_id", cluster_id)
-    return cluster_id
-
-# Waits for the EMR cluster to be ready to accept jobs
-def wait_for_completion(**kwargs):
-    ti = kwargs['ti']
-    cluster_id = ti.xcom_pull(task_ids='create_cluster')
-    emr.wait_for_cluster_creation(cluster_id)
-
-# Terminates the EMR cluster
-def terminate_emr(**kwargs):
-    ti = kwargs['ti']
-    cluster_id = ti.xcom_pull(task_ids='create_cluster')
-    emr.terminate_cluster(cluster_id)
-    #
-    Variable.set("cluster_id", "na")
-    Variable.set("dag_analytics_state", "na")
-    Variable.set("dag_normalize_state", "na")
-
-#
-create_cluster = PythonOperator(
-    task_id='create_cluster',
-    python_callable=create_emr,
-    dag=dag)
-
-wait_for_cluster_completion = PythonOperator(
-    task_id='wait_for_cluster_completion',
-    python_callable=wait_for_completion,
-    dag=dag)
-
-terminate_cluster = PythonOperator(
-    task_id='terminate_cluster',
-    python_callable=terminate_emr,
-    trigger_rule='all_done',
-    dag=dag)
-
-etl_dag_check_complete_task = ETLDAGCheckCompleteSensor(
-    task_id='etl_dag_check_complete',
-    poke_interval=120,
-    dag=dag)
-
-#
-create_cluster >> wait_for_cluster_completion
-wait_for_cluster_completion >> etl_dag_check_complete_task
-etl_dag_check_complete_task >> terminate_cluster
+create_emr_cluster = EmrCreateJobFlowOperator(
+    task_id="create_emr_cluster",
+    job_flow_overrides=JOB_FLOW_OVERRIDES,
+    aws_conn_id="aws_default",
+    emr_conn_id="emr_default",
+    dag=dag,
+)
