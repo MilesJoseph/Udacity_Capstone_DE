@@ -7,7 +7,19 @@ from airflow.contrib.operators.emr_add_steps_operator import EmrAddStepsOperator
 from airflow.contrib.operators.emr_terminate_job_flow_operator import (
     EmrTerminateJobFlowOperator,
 )
-BUCKET_NAME = "s3://airflow-server-environmentbucket-epnkhc131or/dags/transform/"
+
+
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': datetime(2016, 1, 1),
+    'retries': 0,
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'provide_context': True
+}
+
+BUCKET_NAME = "airflow-server-environmentbucket-epnkhc131or/dags/transform/"
 
 SPARK_STEPS = [ # Note the params values are supplied to the operator
     {
@@ -16,8 +28,9 @@ SPARK_STEPS = [ # Note the params values are supplied to the operator
         "HadoopJarStep": {
             "Jar": "command-runner.jar",
             "Args": [
-                "s3-dist-cp",
-                "--src=s3://{{ params.BUCKET_NAME }}/data",
+                "spark-submit",
+                "client",
+                "s3://airflow-server-environmentbucket-epnkhc131or/dags/transform/city.py"
                 "--dest=/movie",
             ],
         },
@@ -69,5 +82,27 @@ create_emr_cluster = EmrCreateJobFlowOperator(
     job_flow_overrides=JOB_FLOW_OVERRIDES,
     aws_conn_id="aws_default",
     emr_conn_id="emr_default",
+    dag=dag,
+)
+
+
+step_adder = EmrAddStepsOperator(
+    task_id="add_steps",
+    job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
+    aws_conn_id="aws_default",
+    steps=SPARK_STEPS,
+    params={ # these params are used to fill the paramterized values in SPARK_STEPS json
+        "BUCKET_NAME": BUCKET_NAME,
+        "s3_data": s3_data,
+        "s3_script": s3_script,
+        "s3_clean": s3_clean,
+    },
+    dag=dag,
+)
+
+terminate_emr_cluster = EmrTerminateJobFlowOperator(
+    task_id="terminate_emr_cluster",
+    job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
+    aws_conn_id="aws_default",
     dag=dag,
 )
