@@ -82,7 +82,7 @@ JOB_FLOW_OVERRIDES = {
 BUCKET_NAME = "airflow-server-environmentbucket-epnkhc131or/dags/transform/"
 
 dag = DAG(
-    "spark_submit_airflow_",
+    "spark_submit_airflow",
     default_args=default_args,
     schedule_interval="0 10 * * *",
     max_active_runs=1,
@@ -128,3 +128,8 @@ terminate_emr_cluster = EmrTerminateJobFlowOperator(
     aws_conn_id="aws_default",
     dag=dag,
 )
+
+end_data_pipeline = DummyOperator(task_id="end_data_pipeline", dag=dag)
+
+
+create_emr_cluster >> step_adder >> step_checker >>terminate_emr_cluster >> end_data_pipeline
