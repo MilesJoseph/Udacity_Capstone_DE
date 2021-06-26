@@ -1,5 +1,10 @@
+from datetime import datetime, timedelta
+
+from airflow import DAG
+from airflow.operators.dummy_operator import DummyOperator
+from airflow.hooks.S3_hook import S3
 from airflow.hooks.S3_hook import S3Hook
-##from airflow.operators import PythonOperator
+from airflow.operators import PythonOperator
 from airflow.contrib.operators.emr_create_job_flow_operator import (
     EmrCreateJobFlowOperator,
 )
@@ -40,7 +45,6 @@ SPARK_STEPS = [ # Note the params values are supplied to the operator
 JOB_FLOW_OVERRIDES = {
     "Name": "Immigration Cluster",
     "ReleaseLabel": "emr-5.29.0",
-    "ec2SubnetId"=
     "Applications": [{"Name": "Hadoop"}, {"Name": "Spark"}], # We want our EMR cluster to have HDFS and Spark
     "Configurations": [
         {
