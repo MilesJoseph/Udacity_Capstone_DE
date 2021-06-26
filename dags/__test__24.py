@@ -4,13 +4,10 @@ from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.hooks.S3_hook import S3Hook
 from airflow.operators.python_operator import PythonOperator
-from airflow.contrib.operators.emr_create_job_flow_operator import (
-    EmrCreateJobFlowOperator,
-)
+from airflow.contrib.operators.emr_create_job_flow_operator import EmrCreateJobFlowOperator
 from airflow.contrib.operators.emr_add_steps_operator import EmrAddStepsOperator
-from airflow.contrib.operators.emr_terminate_job_flow_operator import (
-    EmrTerminateJobFlowOperator,
-)
+from airflow.contrib.operators.emr_terminate_job_flow_operator import EmrTerminateJobFlowOperator
+from airflow.contrib.sensors.emr_step_sensor import EmrStepSensor
 
 
 default_args = {
@@ -85,7 +82,7 @@ JOB_FLOW_OVERRIDES = {
 BUCKET_NAME = "airflow-server-environmentbucket-epnkhc131or/dags/transform/"
 
 dag = DAG(
-    "spark_submit_airflow",
+    "spark_submit_airflow_",
     default_args=default_args,
     schedule_interval="0 10 * * *",
     max_active_runs=1,
@@ -130,3 +127,4 @@ terminate_emr_cluster = EmrTerminateJobFlowOperator(
     job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
     aws_conn_id="aws_default",
     dag=dag,
+)
