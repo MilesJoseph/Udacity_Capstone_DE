@@ -1,5 +1,5 @@
 from airflow.hooks.S3_hook import S3Hook
-from airflow.operators import PythonOperator
+##from airflow.operators import PythonOperator
 from airflow.contrib.operators.emr_create_job_flow_operator import (
     EmrCreateJobFlowOperator,
 )
@@ -23,7 +23,7 @@ BUCKET_NAME = "airflow-server-environmentbucket-epnkhc131or/dags/transform/"
 
 SPARK_STEPS = [ # Note the params values are supplied to the operator
     {
-        "Name": "Move raw data from S3 to HDFS",
+        "Name": "transform city data",
         "ActionOnFailure": "CANCEL_AND_WAIT",
         "HadoopJarStep": {
             "Jar": "command-runner.jar",
@@ -31,7 +31,7 @@ SPARK_STEPS = [ # Note the params values are supplied to the operator
                 "spark-submit",
                 "client",
                 "s3://airflow-server-environmentbucket-epnkhc131or/dags/transform/city.py"
-                "--dest=/movie",
+                "--dest=/city",
             ],
         },
     },
@@ -40,6 +40,7 @@ SPARK_STEPS = [ # Note the params values are supplied to the operator
 JOB_FLOW_OVERRIDES = {
     "Name": "Immigration Cluster",
     "ReleaseLabel": "emr-5.29.0",
+    "ec2SubnetId"=
     "Applications": [{"Name": "Hadoop"}, {"Name": "Spark"}], # We want our EMR cluster to have HDFS and Spark
     "Configurations": [
         {
