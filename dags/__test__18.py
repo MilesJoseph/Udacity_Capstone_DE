@@ -93,7 +93,6 @@ dag = DAG(
 
 start_data_pipeline = DummyOperator(task_id = "start_data_pipeline", dag=dag)
 
-
 create_emr_cluster = EmrCreateJobFlowOperator(
     task_id="create_emr_cluster",
     job_flow_overrides=JOB_FLOW_OVERRIDES,
@@ -113,28 +112,3 @@ step_adder = EmrAddStepsOperator(
     },
     dag=dag,
 )
-
-last_step = len(SPARK_STEPS) - 1 # this value will let the sensor know the last step to watch
-# wait for the steps to complete
-step_checker = EmrStepSensor(
-    task_id="watch_step",
-    job_flow_id="{{ task_instance.xcom_pull('create_emr_cluster', key='return_value') }}",
-    step_id="{{ task_instance.xcom_pull(task_ids='add_steps', key='return_value')["
-    + str(last_step)
-    + "] }}",
-    aws_conn_id="aws_default",
-    dag=dag,
-)
-
-terminate_emr_cluster = EmrTerminateJobFlowOperator(
-    task_id="terminate_emr_cluster",
-    job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
-    aws_conn_id="aws_default",
-    dag=dag,
-)
-
-end_data_pipeline = DummyOperator("end_data_pipeline", dag=dag)
-
-start_data_pipeline >> create_emr_cluster
-create_emr_cluster >> step_adder >> step_checker >> terminate_emr_cluster
-terminate_emr_cluster >> end_data_pipeline
