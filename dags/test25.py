@@ -4,7 +4,9 @@ from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.hooks.S3_hook import S3Hook
 from airflow.operators.python_operator import PythonOperator
-from airflow.contrib.operators.emr_create_job_flow_operator import EmrCreateJobFlowOperator
+from airflow.contrib.operators.emr_create_job_flow_operator import (
+    EmrCreateJobFlowOperator,
+)
 from airflow.contrib.operators.emr_add_steps_operator import EmrAddStepsOperator
 from airflow.contrib.operators.emr_terminate_job_flow_operator import EmrTerminateJobFlowOperator
 from airflow.contrib.sensors.emr_step_sensor import EmrStepSensor
@@ -24,24 +26,8 @@ default_args = {
 
 BUCKET_NAME = "airflow-server-environmentbucket-epnkhc131or/dags/transform/"
 
-SPARK_STEPS = [ # Note the params values are supplied to the operator
-    {
-        "Name": "transform city data",
-        "ActionOnFailure": "CANCEL_AND_WAIT",
-        "HadoopJarStep": {
-            "Jar": "command-runner.jar",
-            "Args": [
-                "spark-submit",
-                "client",
-                "s3://airflow-server-environmentbucket-epnkhc131or/dags/transform/city.py"
-                "--dest=/city",
-            ],
-        },
-    },
-]
-
 JOB_FLOW_OVERRIDES = {
-    "Name": "Immigration Cluster",
+    "Name": "Movie review classifier",
     "ReleaseLabel": "emr-5.29.0",
     "Applications": [{"Name": "Hadoop"}, {"Name": "Spark"}], # We want our EMR cluster to have HDFS and Spark
     "Configurations": [
@@ -79,10 +65,9 @@ JOB_FLOW_OVERRIDES = {
     "ServiceRole": "EMR_DefaultRole",
 }
 
-BUCKET_NAME = "airflow-server-environmentbucket-epnkhc131or/dags/transform/"
 
 dag = DAG(
-    "spark_submit_airflow",
+    "spark_submit_airflow_25",
     default_args=default_args,
     schedule_interval="0 10 * * *",
     max_active_runs=1,
@@ -90,6 +75,7 @@ dag = DAG(
 
 start_data_pipeline = DummyOperator(task_id = "start_data_pipeline", dag=dag)
 
+# Create an EMR cluster
 create_emr_cluster = EmrCreateJobFlowOperator(
     task_id="create_emr_cluster",
     job_flow_overrides=JOB_FLOW_OVERRIDES,
@@ -129,7 +115,8 @@ terminate_emr_cluster = EmrTerminateJobFlowOperator(
     dag=dag,
 )
 
-end_data_pipeline = DummyOperator(task_id="end_data_pipeline", dag=dag)
+end_data_pipeline = DummyOperator("end_data_pipeline", dag=dag)
 
-
-create_emr_cluster >> step_adder >> step_checker >>terminate_emr_cluster >> end_data_pipeline
+start_data_pipeline >> create_emr_cluster
+create_emr_cluster >> step_adder >> step_checker >> terminate_emr_cluster
+terminate_emr_cluster >> end_data_pipeline

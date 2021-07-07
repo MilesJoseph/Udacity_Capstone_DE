@@ -8,9 +8,8 @@ from airflow.contrib.operators.emr_create_job_flow_operator import (
     EmrCreateJobFlowOperator,
 )
 from airflow.contrib.operators.emr_add_steps_operator import EmrAddStepsOperator
-from airflow.contrib.operators.emr_terminate_job_flow_operator import (
-    EmrTerminateJobFlowOperator,
-)
+from airflow.contrib.operators.emr_terminate_job_flow_operator import EmrTerminateJobFlowOperator
+from airflow.contrib.sensors.emr_step_sensor import EmrStepSensor
 
 
 default_args = {
@@ -81,8 +80,6 @@ JOB_FLOW_OVERRIDES = {
     "JobFlowRole": "EMR_EC2_DefaultRole",
     "ServiceRole": "EMR_DefaultRole",
 }
-
-BUCKET_NAME = "airflow-server-environmentbucket-epnkhc131or/dags/transform/"
 
 dag = DAG(
     "spark_submit_airflow",
