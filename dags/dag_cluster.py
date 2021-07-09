@@ -11,48 +11,34 @@ from airflow.contrib.operators.emr_add_steps_operator import EmrAddStepsOperator
 from airflow.contrib.operators.emr_terminate_job_flow_operator import EmrTerminateJobFlowOperator
 from airflow.contrib.sensors.emr_step_sensor import EmrStepSensor
 
-
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": True,
-    "wait_for_downstream": True,
-    "start_date": datetime(2016, 1, 1),
-    "email":["airflow@airflow.com"],
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 1,
-    "retry_delay":timedelta(minutes=5),
-}
-
-BUCKET_NAME = "airflow-server-environmentbucket-epnkhc131or/dags/transform/"
-
-SPARK_STEPS = [ # Note the params values are supplied to the operator
-    {
-        "Name": "transform city data",
+SPARK_STEPS = [
+{
+        "Name": "Classify movie reviews",
         "ActionOnFailure": "CANCEL_AND_WAIT",
         "HadoopJarStep": {
             "Jar": "command-runner.jar",
             "Args": [
                 "spark-submit",
+                "--deploy-mode",
                 "client",
-                "s3://airflow-server-environmentbucket-epnkhc131or/dags/transform/city.py"
-                "--dest=/city",
+                "s3://{{ params.BUCKET_NAME }}/{{ params.s3_script }}",
             ],
         },
     },
 ]
 
+
 JOB_FLOW_OVERRIDES = {
-    "Name": "Immigration Cluster",
+    "Name": "Movie review classifier",
     "ReleaseLabel": "emr-5.29.0",
-    "Applications": [{"Name": "Hadoop"}, {"Name": "Spark"}], # We want our EMR cluster to have HDFS and Spark
+    "Applications": [{"Name": "Hadoop"}, {"Name": "Spark"}],
     "Configurations": [
         {
             "Classification": "spark-env",
             "Configurations": [
                 {
                     "Classification": "export",
-                    "Properties": {"PYSPARK_PYTHON": "/usr/bin/python3"}, # by default EMR uses py2, change it to py3
+                    "Properties": {"PYSPARK_PYTHON": "/usr/bin/python3"},
                 }
             ],
         }
@@ -68,29 +54,45 @@ JOB_FLOW_OVERRIDES = {
             },
             {
                 "Name": "Core - 2",
-                "Market": "SPOT", # Spot instances are a "use as available" instances
+                "Market": "SPOT",
                 "InstanceRole": "CORE",
                 "InstanceType": "m4.xlarge",
                 "InstanceCount": 2,
             },
         ],
         "KeepJobFlowAliveWhenNoSteps": True,
-        "TerminationProtected": False, # this lets us programmatically terminate the cluster
+        "TerminationProtected": False,
     },
     "JobFlowRole": "EMR_EC2_DefaultRole",
     "ServiceRole": "EMR_DefaultRole",
 }
 
+
+BUCKET_NAME = "airflow-server-environmentbucket-epnkhc131or/dags/transform/"
+
+
+default_args = {
+    "owner": "airflow",
+    "depends_on_past": True,
+    "wait_for_downstream": True,
+    "start_date": datetime(2016, 1, 1),
+    "email":["airflow@airflow.com"],
+    "email_on_failure": False,
+    "email_on_retry": False,
+    "retries": 1,
+    "retry_delay":timedelta(minutes=5),
+}
+
 dag = DAG(
-    "spark_submit_airflow",
+    "spark_submit_airflow_25",
     default_args=default_args,
     schedule_interval="0 10 * * *",
     max_active_runs=1,
 )
 
-start_data_pipeline = DummyOperator(task_id = "start_data_pipeline", dag=dag)
+start_data_pipeline = DummyOperator(task_id="start_data_pipeline", dag=dag)
 
-
+# Create an EMR cluster
 create_emr_cluster = EmrCreateJobFlowOperator(
     task_id="create_emr_cluster",
     job_flow_overrides=JOB_FLOW_OVERRIDES,
@@ -99,19 +101,19 @@ create_emr_cluster = EmrCreateJobFlowOperator(
     dag=dag,
 )
 
-
+# Add your steps to the EMR cluster
 step_adder = EmrAddStepsOperator(
     task_id="add_steps",
     job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
     aws_conn_id="aws_default",
     steps=SPARK_STEPS,
-    params={ # these params are used to fill the paramterized values in SPARK_STEPS json
+    params={
         "BUCKET_NAME": BUCKET_NAME
     },
     dag=dag,
 )
 
-last_step = len(SPARK_STEPS) - 1 # this value will let the sensor know the last step to watch
+last_step = len(SPARK_STEPS) - 1
 # wait for the steps to complete
 step_checker = EmrStepSensor(
     task_id="watch_step",
@@ -123,6 +125,7 @@ step_checker = EmrStepSensor(
     dag=dag,
 )
 
+# Terminate the EMR cluster
 terminate_emr_cluster = EmrTerminateJobFlowOperator(
     task_id="terminate_emr_cluster",
     job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
@@ -130,7 +133,7 @@ terminate_emr_cluster = EmrTerminateJobFlowOperator(
     dag=dag,
 )
 
-end_data_pipeline = DummyOperator("end_data_pipeline", dag=dag)
+end_data_pipeline = DummyOperator(task_id="end_data_pipeline", dag=dag)
 
 start_data_pipeline >> create_emr_cluster
 create_emr_cluster >> step_adder >> step_checker >> terminate_emr_cluster
