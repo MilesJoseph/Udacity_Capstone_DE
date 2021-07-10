@@ -21,7 +21,7 @@ SPARK_STEPS = [
                 "spark-submit",
                 "--deploy-mode",
                 "client",
-                "s3://{{ params.BUCKET_NAME }}/{{ params.s3_script }}",
+                "s3://{{ params.BUCKET_NAME }}/{{ params.city.py }}",
             ],
         },
     },
