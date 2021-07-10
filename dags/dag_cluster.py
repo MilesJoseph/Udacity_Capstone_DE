@@ -107,8 +107,8 @@ step_adder = EmrAddStepsOperator(
     job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
     aws_conn_id="aws_default",
     steps=SPARK_STEPS,
-    params={
-        "BUCKET_NAME": BUCKET_NAME
+    #params={
+        #"BUCKET_NAME": BUCKET_NAME
     },
     dag=dag,
 )
