@@ -11,130 +11,142 @@ from airflow.contrib.operators.emr_add_steps_operator import EmrAddStepsOperator
 from airflow.contrib.operators.emr_terminate_job_flow_operator import EmrTerminateJobFlowOperator
 from airflow.contrib.sensors.emr_step_sensor import EmrStepSensor
 
+
+# ************** AIRFLOW VARIABLES **************
+bootstrap_bucket = Variable.get('bootstrap_bucket')
+emr_ec2_key_pair = Variable.get('emr_ec2_key_pair')
+job_flow_role = Variable.get('job_flow_role')
+logs_bucket = Variable.get('logs_bucket')
+release_label = Variable.get('release_label')
+service_role = Variable.get('service_role')
+work_bucket = Variable.get('work_bucket')
+# ***********************************************
+
+
 SPARK_STEPS = [
-{
-        "Name": "Classify movie reviews",
-        "ActionOnFailure": "CANCEL_AND_WAIT",
-        "HadoopJarStep": {
-            "Jar": "command-runner.jar",
-            "Args": [
-                "spark-submit",
-                "--deploy-mode",
-                "client",
-                "s3://{{ params.BUCKET_NAME }}/{{ params.city.py }}",
-            ],
-        },
-    },
+    {
+        'Name': 'City Transform',
+        'ActionOnFailure': 'CONTINUE',
+        'HadoopJarStep': {
+            'Jar': 'command-runner.jar',
+            'Args': [
+                'spark-submit',
+                '–deploy-mode',
+                'cluster',
+                '–master',
+                'yarn',
+                '–conf',
+                'spark.yarn.submit.waitAppCompletion=true',
+                's3a://{{ var.value.work_bucket }}/analyze/bakery_sales_ssm.py'
+            ]
+        }
+    }
 ]
 
 
 JOB_FLOW_OVERRIDES = {
-    "Name": "Movie review classifier",
-    "ReleaseLabel": "emr-5.29.0",
-    "Applications": [{"Name": "Hadoop"}, {"Name": "Spark"}],
-    "Configurations": [
+    'Name': 'demo-cluster-airflow',
+    'ReleaseLabel': '{{ var.value.release_label }}',
+    'LogUri': 's3n://{{ var.value.logs_bucket }}',
+    'Applications': [
         {
-            "Classification": "spark-env",
-            "Configurations": [
-                {
-                    "Classification": "export",
-                    "Properties": {"PYSPARK_PYTHON": "/usr/bin/python3"},
-                }
-            ],
-        }
+            'Name': 'Spark'
+        },
     ],
-    "Instances": {
-        "InstanceGroups": [
+    'Instances': {
+        'InstanceFleets': [
             {
-                "Name": "Master node",
-                "Market": "SPOT",
-                "InstanceRole": "MASTER",
-                "InstanceType": "m4.xlarge",
-                "InstanceCount": 1,
+                'Name': 'MASTER',
+                'InstanceFleetType': 'MASTER',
+                'TargetSpotCapacity': 1,
+                'InstanceTypeConfigs': [
+                    {
+                        'InstanceType': 'm5.xlarge',
+                    },
+                ]
             },
             {
-                "Name": "Core - 2",
-                "Market": "SPOT",
-                "InstanceRole": "CORE",
-                "InstanceType": "m4.xlarge",
-                "InstanceCount": 2,
+                'Name': 'CORE',
+                'InstanceFleetType': 'CORE',
+                'TargetSpotCapacity': 2,
+                'InstanceTypeConfigs': [
+                    {
+                        'InstanceType': 'r5.xlarge',
+                    },
+                ],
             },
         ],
-        "KeepJobFlowAliveWhenNoSteps": True,
-        "TerminationProtected": False,
+        'KeepJobFlowAliveWhenNoSteps': False,
+        'TerminationProtected': False,
+        'Ec2KeyName': '{{ var.value.emr_ec2_key_pair }}',
     },
-    "JobFlowRole": "EMR_EC2_DefaultRole",
-    "ServiceRole": "EMR_DefaultRole",
+    'BootstrapActions': [
+        {
+            'Name': 'string',
+            'ScriptBootstrapAction': {
+                'Path': 's3://{{ var.value.bootstrap_bucket }}/bootstrap_actions.sh',
+            }
+        },
+    ],
+    'Configurations': [
+        {
+            'Classification': 'spark-hive-site',
+            'Properties': {
+                'hive.metastore.client.factory.class': 'com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory'
+            }
+        }
+
+    ],
+    'VisibleToAllUsers': True,
+    'JobFlowRole': '{{ var.value.job_flow_role }}',
+    'ServiceRole': '{{ var.value.service_role }}',
+    'EbsRootVolumeSize': 32,
+    'StepConcurrencyLevel': 1,
+    'Tags': [
+        {
+            'Key': 'Environment',
+            'Value': 'Development'
+        },
+        {
+            'Key': 'Name',
+            'Value': 'Airflow EMR Demo Project'
+        },
+        {
+            'Key': 'Owner',
+            'Value': 'Data Analytics Team'
+        }
+    ]
 }
 
 
-BUCKET_NAME = "airflow-server-environmentbucket-epnkhc131or/dags/transform/"
 
+with DAG(
+        dag_id=DAG_ID,
+        description='Analyze Bakery Sales with Amazon EMR',
+        default_args=DEFAULT_ARGS,
+        dagrun_timeout=timedelta(hours=2),
+        start_date=days_ago(1),
+        schedule_interval='@once',
+        tags=['emr'],
+) as dag:
+    cluster_creator = EmrCreateJobFlowOperator(
+        task_id='create_job_flow',
+        job_flow_overrides=JOB_FLOW_OVERRIDES
 
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": True,
-    "wait_for_downstream": True,
-    "start_date": datetime(2016, 1, 1),
-    "email":["airflow@airflow.com"],
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 1,
-    "retry_delay":timedelta(minutes=5),
-}
-
-dag = DAG(
-    "spark_submit_airflow_25",
-    default_args=default_args,
-    schedule_interval="0 10 * * *",
-    max_active_runs=1,
 )
 
-start_data_pipeline = DummyOperator(task_id="start_data_pipeline", dag=dag)
+    step_adder = EmrAddStepsOperator(
+        task_id='add_steps',
+        job_flow_id="{{ task_instance.xcom_pull(task_ids='create_job_flow', key='return_value') }}",
+        aws_conn_id='aws_default',
+        steps=SPARK_STEPS,
+    )
 
-# Create an EMR cluster
-create_emr_cluster = EmrCreateJobFlowOperator(
-    task_id="create_emr_cluster",
-    job_flow_overrides=JOB_FLOW_OVERRIDES,
-    aws_conn_id="aws_default",
-    emr_conn_id="emr_default",
-    dag=dag,
-)
+    step_checker = EmrStepSensor(
+        task_id='watch_step',
+        job_flow_id="{{ task_instance.xcom_pull('create_job_flow', key='return_value') }}",
+        step_id="{{ task_instance.xcom_pull(task_ids='add_steps', key='return_value')[0] }}",
+        aws_conn_id='aws_default',
+    )
 
-# Add your steps to the EMR cluster
-step_adder = EmrAddStepsOperator(
-    task_id="add_steps",
-    job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
-    aws_conn_id="aws_default",
-    steps=SPARK_STEPS,
-    #params={
-        #"BUCKET_NAME": BUCKET_NAME
-    },
-    dag=dag,
-)
-
-last_step = len(SPARK_STEPS) - 1
-# wait for the steps to complete
-step_checker = EmrStepSensor(
-    task_id="watch_step",
-    job_flow_id="{{ task_instance.xcom_pull('create_emr_cluster', key='return_value') }}",
-    step_id="{{ task_instance.xcom_pull(task_ids='add_steps', key='return_value')["
-    + str(last_step)
-    + "] }}",
-    aws_conn_id="aws_default",
-    dag=dag,
-)
-
-# Terminate the EMR cluster
-terminate_emr_cluster = EmrTerminateJobFlowOperator(
-    task_id="terminate_emr_cluster",
-    job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
-    aws_conn_id="aws_default",
-    dag=dag,
-)
-
-end_data_pipeline = DummyOperator(task_id="end_data_pipeline", dag=dag)
-
-start_data_pipeline >> create_emr_cluster
-create_emr_cluster >> step_adder >> step_checker >> terminate_emr_cluster
-terminate_emr_cluster >> end_data_pipeline
+    cluster_creator >> step_adder >> step_checker
