@@ -10,65 +10,73 @@ from airflow.contrib.operators.emr_create_job_flow_operator import (
 from airflow.contrib.operators.emr_add_steps_operator import EmrAddStepsOperator
 from airflow.contrib.operators.emr_terminate_job_flow_operator import EmrTerminateJobFlowOperator
 from airflow.contrib.sensors.emr_step_sensor import EmrStepSensor
+from airflow.models import Variable
+
+BUCKET_NAME = "airflow-server-environmentbucket-epnkhc131or"
+
+
+work_bucket = Variable.get('work_bucket')
 
 SPARK_STEPS = [
-{
-        "Name": "Classify movie reviews",
-        "ActionOnFailure": "CANCEL_AND_WAIT",
-        "HadoopJarStep": {
-            "Jar": "command-runner.jar",
-            "Args": [
-                "spark-submit",
-                "--deploy-mode",
-                "client",
-                "s3://{{ params.BUCKET_NAME }}/city.py",
-            ],
-        },
-    },
+    {
+        'Name': 'Bakery Sales',
+        'ActionOnFailure': 'CONTINUE',
+        'HadoopJarStep': {
+            'Jar': 'command-runner.jar',
+            'Args': [
+                'spark-submit',
+                '–deploy-mode',
+                'cluster',
+                '–master',
+                'yarn',
+                '–conf',
+                'spark.yarn.submit.waitAppCompletion=true',
+                's3a://{{ var.value.work_bucket }}/city.py'
+            ]
+        }
+    }
 ]
 
 
 JOB_FLOW_OVERRIDES = {
-    "Name": "Movie review classifier",
-    "ReleaseLabel": "emr-5.29.0",
-    "Applications": [{"Name": "Hadoop"}, {"Name": "Spark"}], # We want our EMR cluster to have HDFS and Spark
-    "Configurations": [
+    'Name': 'demo-cluster-airflow',
+    'ReleaseLabel': 'emr-6.2.0',
+    'Applications': [
         {
-            "Classification": "spark-env",
-            "Configurations": [
-                {
-                    "Classification": "export",
-                    "Properties": {"PYSPARK_PYTHON": "/usr/bin/python3"}, # by default EMR uses py2, change it to py3
-                }
-            ],
-        }
+            'Name': 'Spark'
+        },
     ],
-    "Instances": {
-        "InstanceGroups": [
+    'Instances': {
+        'InstanceGroups': [
             {
-                "Name": "Master node",
-                "Market": "SPOT",
-                "InstanceRole": "MASTER",
-                "InstanceType": "m4.xlarge",
-                "InstanceCount": 1,
-            },
-            {
-                "Name": "Core - 2",
-                "Market": "SPOT", # Spot instances are a "use as available" instances
-                "InstanceRole": "CORE",
-                "InstanceType": "m4.xlarge",
-                "InstanceCount": 2,
-            },
+                'Name': 'Master nodes',
+                'Market': 'ON_DEMAND',
+                'InstanceRole': 'MASTER',
+                'InstanceType': 'm5.xlarge',
+                'InstanceCount': 1,
+            }
         ],
-        "KeepJobFlowAliveWhenNoSteps": True,
-            "TerminationProtected": False, # this lets us programmatically terminate the cluster
+        'KeepJobFlowAliveWhenNoSteps': False,
+        'TerminationProtected': False,
     },
-    "JobFlowRole": "EMR_EC2_DefaultRole",
-    "ServiceRole": "EMR_DefaultRole",
+    'VisibleToAllUsers': True,
+    'JobFlowRole': 'EMR_EC2_DefaultRole',
+    'ServiceRole': 'EMR_DefaultRole',
+    'Tags': [
+        {
+            'Key': 'Environment',
+            'Value': 'Development'
+        },
+        {
+            'Key': 'Name',
+            'Value': 'Airflow EMR Demo Project'
+        },
+        {
+            'Key': 'Owner',
+            'Value': 'Data Analytics Team'
+        }
+    ]
 }
-
-BUCKET_NAME = "airflow-server-environmentbucket-epnkhc131or/dags/transform/"
-
 
 default_args = {
     "owner": "airflow",
@@ -83,7 +91,7 @@ default_args = {
 }
 
 dag = DAG(
-    "spark_submit_airflow_25",
+    "Udacit-Final",
     default_args=default_args,
     schedule_interval="0 10 * * *",
     max_active_runs=1,
@@ -106,9 +114,6 @@ step_adder = EmrAddStepsOperator(
     job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
     aws_conn_id="aws_default",
     steps=SPARK_STEPS,
-    params={
-        "BUCKET_NAME": BUCKET_NAME
-    },
     dag=dag,
 )
 
