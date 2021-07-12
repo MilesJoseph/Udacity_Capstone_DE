@@ -11,13 +11,13 @@ udf_parse_state = udf(lambda x: parse_state(x), StringType())
 
 
 #
-demo = spark.read.format('csv').load('s3://de-capstone/raw/demographics/us-cities-demographics.csv', header=True, inferSchema=True, sep=';')\
+demo = spark.read.format('csv').load('s3://capstone-mk/demographics/us-cities-demographics.csv', header=True, inferSchema=True, sep=';')\
                 .select("State Code", "City")\
                 .withColumnRenamed("State Code", "state_code")\
                 .withColumnRenamed("City", "city")
 
 #
-us_airport = spark.read.format('csv').load('s3://de-capstone/raw/codes/airport_code.csv', header=True, inferSchema=True)\
+us_airport = spark.read.format('csv').load('s3://capstone-mk/codes/airport_code.csv', header=True, inferSchema=True)\
                         .filter("iso_country = 'US'")\
                         .withColumn("state", udf_parse_state("iso_region"))\
                         .selectExpr("municipality AS city", "state AS state_code")
@@ -28,4 +28,4 @@ city = us_airport.union(demo)\
                  .withColumn("city_id", F.monotonically_increasing_id())
 
 #
-city.write.mode("overwrite").parquet("s3://de-capstone/lake/city/")
+city.write.mode("overwrite").parquet("s3://capstone-mk/lake/city/")
