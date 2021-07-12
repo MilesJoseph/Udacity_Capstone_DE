@@ -19,22 +19,18 @@ work_bucket = Variable.get('work_bucket')
 
 SPARK_STEPS = [
     {
-        'Name': 'Bakery Sales',
-        'ActionOnFailure': 'CONTINUE',
-        'HadoopJarStep': {
-            'Jar': 'command-runner.jar',
-            'Args': [
-                'spark-submit',
-                '–deploy-mode',
-                'cluster',
-                '–master',
-                'yarn',
-                '–conf',
-                'spark.yarn.submit.waitAppCompletion=true',
-                's3a://{{ var.value.work_bucket }}/city.py'
-            ]
-        }
-    }
+        "Name": "Classify movie reviews",
+        "ActionOnFailure": "CANCEL_AND_WAIT",
+        "HadoopJarStep": {
+            "Jar": "command-runner.jar",
+            "Args": [
+                "spark-submit",
+                "--deploy-mode",
+                "client",
+                "s3a://{{ var.value.work_bucket }}/city.py",
+            ],
+        },
+    },
 ]
 
 JOB_FLOW_OVERRIDES = {
@@ -118,14 +114,12 @@ step_adder = EmrAddStepsOperator(
 last_step = len(SPARK_STEPS) - 1
 # wait for the steps to complete
 step_checker = EmrStepSensor(
-    task_id="watch_step",
-    job_flow_id="{{ task_instance.xcom_pull('create_emr_cluster', key='return_value') }}",
-    step_id="{{ task_instance.xcom_pull(task_ids='add_steps', key='return_value')["
-    + str(last_step)
-    + "] }}",
-    aws_conn_id="aws_default",
+    task_id='watch_step',
+    job_flow_id="{{ task_instance.xcom_pull('create_job_flow', key='return_value') }}",
+    step_id="{{ task_instance.xcom_pull(task_ids='add_steps', key='return_value')[0] }}",
+    aws_conn_id='aws_default',
     dag=dag,
-)
+    )
 
 # Terminate the EMR cluster
 terminate_emr_cluster = EmrTerminateJobFlowOperator(
