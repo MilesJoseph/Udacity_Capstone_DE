@@ -82,10 +82,11 @@ default_args = {
     "email_on_retry": False,
     "retries": 1,
     "retry_delay":timedelta(minutes=5),
+    'provide_context': True
 }
 
 dag = DAG(
-    "Udacit-Final",
+    "Udacity-Final-New",
     default_args=default_args,
     schedule_interval="0 10 * * *",
     max_active_runs=1,
@@ -111,12 +112,16 @@ step_adder = EmrAddStepsOperator(
     dag=dag,
 )
 
+def print_xcom_result(*op_args, **kwargs):
+        print(op_args)
+        print(kwargs['task_instance'].xcom_pull(task_ids='add_steps'))
+
 last_step = len(SPARK_STEPS) - 1
 # wait for the steps to complete
 step_checker = EmrStepSensor(
     task_id='watch_step',
-    job_flow_id="{{ task_instance.xcom_pull('create_emr_cluster', key='return_value') }}",
-    step_id="{{ task_instance.xcom_pull(task_ids='add_steps', key='return_value')[0] }}",
+    job_flow_id="{{ task_instance.xcom_pull('create_emr_cluster', key='return_value')}}",
+    step_id="{{ task_instance.xcom_pull(task_ids='add_steps', key='return_value')[0]}}",
     aws_conn_id='aws_default',
     dag=dag,
     )
