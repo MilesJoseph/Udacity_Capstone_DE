@@ -27,7 +27,7 @@ SPARK_STEPS = [
                 "spark-submit",
                 "--deploy-mode",
                 "client",
-                "s3a://{{ var.value.work_bucket }}/city.py",
+                "s3a://{{ var.value.work_bucket }}/pyspark_test.py",
             ],
         },
     },
@@ -35,15 +35,15 @@ SPARK_STEPS = [
 
 JOB_FLOW_OVERRIDES = {
     "Name": "Movie review classifier",
-    "ReleaseLabel": "emr-5.29.0",
-    "Applications": [{"Name": "Hadoop"}, {"Name": "Spark"}], # We want our EMR cluster to have HDFS and Spark
+    "ReleaseLabel": "emr-5.33.0",
+    "Applications": [{"Name": "Hadoop"}, {"Name": "Spark"}],
     "Configurations": [
         {
             "Classification": "spark-env",
             "Configurations": [
                 {
                     "Classification": "export",
-                    "Properties": {"PYSPARK_PYTHON": "/usr/bin/python3"}, # by default EMR uses py2, change it to py3
+                    "Properties": {"PYSPARK_PYTHON": "/usr/bin/python3"},
                 }
             ],
         }
@@ -59,14 +59,14 @@ JOB_FLOW_OVERRIDES = {
             },
             {
                 "Name": "Core - 2",
-                "Market": "SPOT", # Spot instances are a "use as available" instances
+                "Market": "SPOT",
                 "InstanceRole": "CORE",
                 "InstanceType": "m4.xlarge",
                 "InstanceCount": 2,
             },
         ],
         "KeepJobFlowAliveWhenNoSteps": True,
-        "TerminationProtected": False, # this lets us programmatically terminate the cluster
+        "TerminationProtected": False, 
          },
     "JobFlowRole": "EMR_EC2_DefaultRole",
     "ServiceRole": "EMR_DefaultRole",
