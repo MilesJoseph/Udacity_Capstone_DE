@@ -18,6 +18,10 @@ def parse_state(x):
     return x.strip().split('-')[-1]
 udf_parse_state = udf(lambda x: parse_state(x), StringType())
 
+spark = SparkSession \
+        .builder \
+        .appName("transforms") \
+        .getOrCreate()
 
 #
 city = spark.read.parquet("s3://capstone-mk/lake/city/")
