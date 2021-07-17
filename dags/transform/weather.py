@@ -3,6 +3,11 @@ from pyspark.sql.functions import udf, col
 import pyspark.sql.functions as F
 from pyspark.sql.types import *
 
+spark = SparkSession \
+        .builder \
+        .appName("transforms") \
+        .getOrCreate()
+
 
 def convert_latitude(x):
     direction = str(x)[-1]

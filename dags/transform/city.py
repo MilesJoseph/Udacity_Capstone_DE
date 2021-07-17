@@ -4,17 +4,17 @@ from pyspark.sql.types import *
 from pyspark.sql.functions import udf
 from pyspark.sql import SparkSession
 
-def parse_state(x):
-    return x.strip().split('-')[-1]
-udf_parse_state = udf(lambda x: parse_state(x), StringType())
-
-
 
 
 spark = SparkSession \
         .builder \
         .appName("transforms") \
         .getOrCreate()
+
+def parse_state(x):
+    return x.strip().split('-')[-1]
+udf_parse_state = udf(lambda x: parse_state(x), StringType())
+
 #
 demo = spark.read.format('csv').load('s3://capstone-mk/demographics/us-cities-demographics.csv', header=True, inferSchema=True, sep=';')\
                 .select("State Code", "City")\

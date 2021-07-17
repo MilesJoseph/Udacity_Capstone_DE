@@ -3,6 +3,11 @@ import pyspark.sql.functions as F
 from pyspark.sql.types import *
 from pyspark.sql.functions import udf
 
+spark = SparkSession \
+        .builder \
+        .appName("transforms") \
+        .getOrCreate()
+
 
 def parse_lat(x):
     y = x.strip().split(',')
@@ -17,11 +22,6 @@ udf_parse_long = udf(lambda x: parse_long(x), FloatType())
 def parse_state(x):
     return x.strip().split('-')[-1]
 udf_parse_state = udf(lambda x: parse_state(x), StringType())
-
-spark = SparkSession \
-        .builder \
-        .appName("transforms") \
-        .getOrCreate()
 
 #
 city = spark.read.parquet("s3://capstone-mk/lake/city/")
