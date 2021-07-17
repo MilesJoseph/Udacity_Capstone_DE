@@ -35,6 +35,6 @@ us_wea = spark.read.format('csv').load('s3://capstone-mk/raw/temperatures/Global
                                  .drop("dt", "country", "latitude", "longitude")
 
 # Replace city with city_id
-city = spark.read.parquet("s3://de-capstone/lake/city/")
+city = spark.read.parquet("s3://capstone-mk/lake/city/")
 us_wea = us_wea.join(city, "city", "left").drop("city", "state_code", "city_latitude", "city_longitude")
 us_wea.write.mode("overwrite").parquet("s3://capstone-mk/lake/us_cities_temperatures/")
