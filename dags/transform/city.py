@@ -2,8 +2,6 @@ from pyspark.sql.functions import col
 import pyspark.sql.functions as F
 from pyspark.sql.types import *
 from pyspark.sql.functions import udf
-Logger= spark._jvm.org.apache.log4j.Logger
-mylogger = Logger.getLogger(__name__)
 from pyspark.sql import SparkSession
 
 def parse_state(x):
