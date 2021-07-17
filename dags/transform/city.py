@@ -24,7 +24,7 @@ def main():
                 .withColumnRenamed("City", "city")
 
 #
-    us_airport = spark.read.format('csv').load('s3://capstone-mk/codes/airport_code.csv', header=True, inferSchema=True)\
+    us_airport = spark.read.format('csv').load('s3://capstone-mk/codes/airport-code_csv.csv', header=True, inferSchema=True)\
                         .filter("iso_country = 'US'")\
                         .withColumn("state", udf_parse_state("iso_region"))\
                         .selectExpr("municipality AS city", "state AS state_code")
