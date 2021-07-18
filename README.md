@@ -66,3 +66,9 @@
 ## ETL
 
 ![](assets/README-0b071138.png)
+
+## Attributes
+
+  I found a very helpful article by Gary A. Stafford ' Running Spark Jobs on Amazon EMR with Apache Airflow'. This artcle is great for learning how to spin up a cluster programatically.
+
+  https://itnext.io/running-spark-jobs-on-amazon-emr-with-apache-airflow-2e16647fea0c
