@@ -37,3 +37,6 @@
                 - checking that the steps are complete
 
                 - termintating the cluster
+
+
+  if test 
