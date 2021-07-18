@@ -19,7 +19,7 @@ work_bucket = Variable.get('work_bucket')
 
 SPARK_STEPS = [
     {
-        "Name": "Classify movie reviews",
+        "Name": "transform city",
         "ActionOnFailure": "CANCEL_AND_WAIT",
         "HadoopJarStep": {
             "Jar": "command-runner.jar",
@@ -27,7 +27,72 @@ SPARK_STEPS = [
                 "spark-submit",
                 "--deploy-mode",
                 "client",
-                "s3a://{{ var.value.work_bucket }}/pyspark_test.py",
+                "s3a://{{ var.value.work_bucket }}/city.py",
+            ],
+        },
+    },
+    {
+        "Name": "transform codes",
+        "ActionOnFailure": "CANCEL_AND_WAIT",
+        "HadoopJarStep": {
+            "Jar": "command-runner.jar",
+            "Args": [
+                "spark-submit",
+                "--deploy-mode",
+                "client",
+                "s3a://{{ var.value.work_bucket }}/codes.py",
+            ],
+        },
+    },
+    {
+        "Name": "transform weather",
+        "ActionOnFailure": "CANCEL_AND_WAIT",
+        "HadoopJarStep": {
+            "Jar": "command-runner.jar",
+            "Args": [
+                "spark-submit",
+                "--deploy-mode",
+                "client",
+                "s3a://{{ var.value.work_bucket }}/weather.py",
+            ],
+        },
+    },
+    {
+        "Name": "transform city",
+        "ActionOnFailure": "CANCEL_AND_WAIT",
+        "HadoopJarStep": {
+            "Jar": "command-runner.jar",
+            "Args": [
+                "spark-submit",
+                "--deploy-mode",
+                "client",
+                "s3a://{{ var.value.work_bucket }}/airport_weather.py",
+            ],
+        },
+    },
+    {
+        "Name": "transform city",
+        "ActionOnFailure": "CANCEL_AND_WAIT",
+        "HadoopJarStep": {
+            "Jar": "command-runner.jar",
+            "Args": [
+                "spark-submit",
+                "--deploy-mode",
+                "client",
+                "s3a://{{ var.value.work_bucket }}/immigration.py",
+            ],
+        },
+    },
+    {
+        "Name": "transform city",
+        "ActionOnFailure": "CANCEL_AND_WAIT",
+        "HadoopJarStep": {
+            "Jar": "command-runner.jar",
+            "Args": [
+                "spark-submit",
+                "--deploy-mode",
+                "client",
+                "s3a://{{ var.value.work_bucket }}/immigration_demographics.py",
             ],
         },
     },

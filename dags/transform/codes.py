@@ -2,6 +2,7 @@ from pyspark.sql.functions import col
 import pyspark.sql.functions as F
 from pyspark.sql.types import *
 from pyspark.sql.functions import udf
+from pyspark.sql import SparkSession
 
 spark = SparkSession \
         .builder \
@@ -25,7 +26,7 @@ udf_parse_state = udf(lambda x: parse_state(x), StringType())
 
 #
 city = spark.read.parquet("s3://capstone-mk/lake/city/")
-us_airport = spark.read.format('csv').load('s3://capstone-mk/raw/codes/airport-codes_csv.csv', header=True, inferSchema=True)\
+us_airport = spark.read.format('csv').load('s3://capstone-mk/airport-codes_csv.csv', header=True, inferSchema=True)\
                         .withColumn("airport_latitude", udf_parse_lat("coordinates"))\
                         .withColumn("airport_longitude", udf_parse_long("coordinates"))\
                         .filter("iso_country = 'US'")\
@@ -35,4 +36,4 @@ us_airport = spark.read.format('csv').load('s3://capstone-mk/raw/codes/airport-c
                                 "iso_region", "iso_country")
 us_airport = us_airport.join(city, (us_airport.municipality==city.city) & (us_airport.state==city.state_code), "left")\
                         .drop("municipality", "state", "city", "state_code")
-us_airport.write.mode("overwrite").parquet("s3://capstone-mk/lake/codes/airport_code/")
+us_airport.write.mode("overwrite").parquet("s3://capstone-mk/airport_code/")

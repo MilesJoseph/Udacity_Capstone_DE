@@ -2,6 +2,7 @@ from pyspark.sql.types import *
 from pyspark.sql.functions import udf, col
 import pyspark.sql.functions as F
 from pyspark.sql.types import *
+from pyspark.sql import SparkSession
 
 spark = SparkSession \
         .builder \
@@ -27,7 +28,7 @@ udf_convert_longitude = udf(lambda x: convert_longitude(x), FloatType())
 
 
 thres = F.to_date(F.lit("2013-08-01")).cast(TimestampType())
-us_wea = spark.read.format('csv').load('s3://capstone-mk/raw/temperatures/GlobalLandTemperaturesByCity.csv', header=True, inferSchema=True)\
+us_wea = spark.read.format('csv').load('s3://capstone-mk/GlobalLandTemperaturesByCity.csv', header=True, inferSchema=True)\
                                  .where(col("dt") > thres)\
                                  .withColumn("latitude", udf_convert_latitude("Latitude"))\
                                  .withColumn("longitude", udf_convert_longitude("Longitude"))\
@@ -40,6 +41,6 @@ us_wea = spark.read.format('csv').load('s3://capstone-mk/raw/temperatures/Global
                                  .drop("dt", "country", "latitude", "longitude")
 
 # Replace city with city_id
-city = spark.read.parquet("s3://capstone-mk/lake/city/")
+city = spark.read.parquet("s3://capstone-mk/city/")
 us_wea = us_wea.join(city, "city", "left").drop("city", "state_code", "city_latitude", "city_longitude")
-us_wea.write.mode("overwrite").parquet("s3://capstone-mk/lake/us_cities_temperatures/")
+us_wea.write.mode("overwrite").parquet("s3://capstone-mk/us_cities_temperatures/")
