@@ -28,12 +28,12 @@
 
   I chose to programatically spin up a cluster within the body of my dag. You can use Livy, but I found this to be a little cumbersome and the API a little clumsy.
 
-  Utilizing EMR is pretty easy in the airflow environment as there is a robust library that allows the DAG 'dag_cluster' to be broken down into four distinct steps; 
+  Utilizing EMR is pretty easy in the airflow environment as there is a robust library that allows the DAG 'dag_cluster' to be broken down into four distinct steps;
 
-                * creating a cluster
+                - creating a cluster
 
-                * running Spark steps
+                - running Spark steps
 
-                * checking that the steps are complete
+                - checking that the steps are complete
 
-                * termintating the cluster
+                - termintating the cluster
