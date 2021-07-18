@@ -61,4 +61,8 @@
 
   You could run the pipeline whenever you want, at a daily cadence with an email notification for failure. This would only happen after a predetermined number of retries.
 
-  Another thing we would write in order for this to be considered production ready would be to write quality checks. If a check were to fail then it would notifiy the admin. 
+  Another thing we would write in order for this to be considered production ready would be to write quality checks. If a check were to fail then it would notifiy the admin.
+
+## ETL
+
+![](assets/README-0b071138.png)
