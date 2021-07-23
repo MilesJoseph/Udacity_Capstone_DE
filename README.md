@@ -41,7 +41,11 @@
 
 ## Data Schema
 
-  I decided to keep my schema in s3.  s3 also is easy to use, has lower costs than other microservices such a redshift and can be faster since we are writing to paraquet files. In addition, many users can access s3 buckets, which is particularly helpful when we consider the context of the data, i.e. for public consumption.  
+  I decided to keep my schema in s3.  s3 also is easy to use, has lower costs than other microservices such a redshift and can be faster since we are writing to parquet files. In addition, many users can access s3 buckets, which is particularly helpful when we consider the context of the data, i.e. for public consumption.
+
+    - Anyone with the knowledge to access the publicly available s3 bucket could access the data. However they would need to have the technical understanding to read the parquet files.
+
+    - Some sample queries could include
 
 ## Table Designs
 
