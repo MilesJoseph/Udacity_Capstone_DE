@@ -43,9 +43,10 @@
 
   I decided to keep my schema in s3.  s3 also is easy to use, has lower costs than other microservices such a redshift and can be faster since we are writing to parquet files. In addition, many users can access s3 buckets, which is particularly helpful when we consider the context of the data, i.e. for public consumption.
 
-    - Anyone with the knowledge and access to the publicly available s3 bucket perform analytics or queries on the data. However, they would need to have the technical understanding to read the parquet files. Ideally, a business intelligence analyst could provide a web UI with embedded dashboards for the people looking to travel or visit U.S. locations.
+    * Anyone with the knowledge and access to the publicly available s3 bucket perform analytics or queries on the data. However, they would need to have the technical understanding to read the parquet files. Ideally, a business intelligence analyst could provide a web UI with embedded dashboards for the people looking to travel or visit U.S. locations.
 
-    - Some metrics that could be either queried or displayed in a dashboard could include;
+    * Some metrics that could be either queried or displayed in a dashboard could include;
+    
 ```python
     from pyspark.sql.types import *
     from pyspark.sql.functions import udf, col
