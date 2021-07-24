@@ -78,11 +78,9 @@
 
   We would most likely want to write the spin up in such a way that the EMR cluster could increase should the size of the data increase.
 
-## Scenario
+## Scenarios
 
-  You could run the pipeline whenever you want, at a daily cadence with an email notification for failure. This would only happen after a predetermined number of retries.
-
-  Another thing we would write in order for this to be considered production ready would be to write quality checks. If a check were to fail then it would notifiy the admin.
+* Data increases by 100x.
 
 ## ETL
 
