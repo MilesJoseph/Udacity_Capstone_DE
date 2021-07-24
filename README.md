@@ -38,32 +38,53 @@
 
                 - terminating the cluster
 
+  The reason I chose to use MWAA is that it is fully managed and takes very little setup. Alternative options include running Airflow within containers on EC2, but this takes much more configuration and expertise. So, for an ease of use, MWAA is the easiest option there is for AWS microservices, but it does cost a little more as it is paid per environment length as opposed to compute time.
+
+  EMR is an obvious chose for data transformations across large data sets. EMR is costs effective as the cost is related only to the compute time of the node. In addition, should you want to determine whether your transformations are running optimally then you could create a DAG that analyzes the length of each step, or you could examine the metadata within Airflow.
 
 ## Data Schema
 
-  I decided to keep my schema in s3.  s3 also is easy to use, has lower costs than other microservices such a redshift and can be faster since we are writing to parquet files. In addition, many users can access s3 buckets, which is particularly helpful when we consider the context of the data, i.e. for public consumption.
+  I decided to keep my schema in s3.  s3 also is easy to use, has lower costs than other microservices such a redshift and can be faster since we are writing to parquet files. In addition, many users can access s3 buckets, which is particularly helpful when we consider the context of the data, i.e. for public consumption. Additionally, the data lake model in s3 has;
+
+    * Ease of use and understandable schema design on read
+    * flexibility in adding data
+    * Available to a huge number of users
 
  Anyone with the knowledge and access to the publicly available s3 bucket perform analytics or queries on the data. However, they would need to have the technical understanding to read the parquet files. Ideally, a business intelligence analyst could provide a web UI with embedded dashboards for the people looking to travel or visit U.S. locations.
 
  Some metrics that could be either queried or displayed in a dashboard could include;
 
 ```python
-    from pyspark.sql.types import *
-    from pyspark.sql.functions import udf, col
-    import pyspark.sql.functions as F
-    from pyspark.sql.types import *
+from pyspark.sql.types import *
+from pyspark.sql.functions import udf, col
+import pyspark.sql.functions as F
+from pyspark.sql.types import *
 
-    spark = SparkSession \
-            .builder \
-            .appName("transforms") \
-            .getOrCreate()
 
-    immig_demo = spark.read.parquet("s3;//capstone-mk/lake/immigration_demographic")
+spark = SparkSession \
+        .builder \
+        .appName("transforms") \
+        .getOrCreate()
 
-    immig_demo.select('city_id', 'mediang_age', 'total_population', 'foreign_born') \
-        .where(col('state_id') == 'Illinois') \
-        .show()>`
+
+city = spark.read.parquet("s3://de-capstone/lake/city/")
+demo = spark.read.parquet("s3://de-capstone/lake/immigration_demographic/")
+
+demo.select("city_id","median_age", "total_population", "foreign_born")\
+    .join(city.select("state_code", "city_id", "city"), "city_id")\
+    .where(col('state_code',)=='IL')\
+    .drop("city_id")\
+    .groupBy('city').agg(F.mean("median_age").alias("median_age"),\
+                     F.mean("total_population").alias("total_population"),\
+                     F.mean("foreign_born").alias("foreign_born"))\
+    .orderBy('median_age')\
+    .show()
 ```
+
+These results return in less than five seconds and returned;
+
+![](assets/README-f7bc9c11.png)
+
 ## Table Designs
 
 1. US city - built on the codes from airport and demographics
@@ -81,6 +102,29 @@
 ## Scenarios
 
 * Data increases by 100x.
+
+  Preferably we would use Cassandra among AWS data storage options. This would allow partitioning across many different servers.
+
+  Cassandra has a unique design;
+
+      "Every node in the cluster has the same role. There is no single point of failure. Data is distributed across the cluster (so each node contains different data), but there is no master as every node can service any request."
+
+  Cassandra is scalable as both read and write are improved with the addition of machines to the framework with no interruptions to applications.
+
+  Data is distributed across multiple nodes for fault-tolerance.
+
+  Cassandra also has Hadoop integration and Cassandra Query Language.
+
+* Pipelines would run at 7am daily. This begs the question as to how the dashboards would update or continue to work.
+
+  Any DAG failures would retry based on the set number of retires. After the retries have been exhausted then an email would be sent to the operators.
+
+  In addition to this, the dashboards would freeze and the troubleshooting could begin via the DAGS.
+
+* How could the database be made available to 100+ people?
+
+  With Cassandra we could predefine indexes for optimal read queries.
+  We can also scale up as necessary, correct administration of a Cassandra base and this can happen automatically as needed.
 
 ## ETL
 

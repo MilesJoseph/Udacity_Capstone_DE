@@ -4,6 +4,8 @@ import pyspark.sql.functions as F
 from pyspark.sql.types import *
 import math
 from datetime import datetime, timedelta
+from pyspark.sql import SparkSession
+
 
 spark = SparkSession \
         .builder \
