@@ -5,6 +5,11 @@ from pyspark.sql.types import *
 import math
 from datetime import datetime, timedelta
 
+spark = SparkSession \
+        .builder \
+        .appName("transforms") \
+        .getOrCreate()
+
 
 immigrant = spark.read.parquet("s3://capstone-mk/immigrant/")\
                       .filter("i94_dt = '{}'".format(month_year))
