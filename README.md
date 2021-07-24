@@ -47,7 +47,7 @@
 
     - Some metrics that could be either queried or displayed in a dashboard could include;
 
-  ` from pyspark.sql.types import *
+  `<from pyspark.sql.types import *
     from pyspark.sql.functions import udf, col
     import pyspark.sql.functions as F
     from pyspark.sql.types import *
@@ -61,8 +61,7 @@
 
     immig_demo.select('city_id', 'mediang_age', 'total_population', 'foreign_born') \
         .where(col('state_id') == 'Illinois') \
-        .show()
-    `
+        .show()>`
 
 ## Table Designs
 
