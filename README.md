@@ -46,8 +46,8 @@
     - Anyone with the knowledge and access to the publicly available s3 bucket perform analytics or queries on the data. However, they would need to have the technical understanding to read the parquet files. Ideally, a business intelligence analyst could provide a web UI with embedded dashboards for the people looking to travel or visit U.S. locations.
 
     - Some metrics that could be either queried or displayed in a dashboard could include;
-
-  `<from pyspark.sql.types import *
+```python
+    from pyspark.sql.types import *
     from pyspark.sql.functions import udf, col
     import pyspark.sql.functions as F
     from pyspark.sql.types import *
@@ -62,7 +62,7 @@
     immig_demo.select('city_id', 'mediang_age', 'total_population', 'foreign_born') \
         .where(col('state_id') == 'Illinois') \
         .show()>`
-
+```
 ## Table Designs
 
 1. US city - built on the codes from airport and demographics
