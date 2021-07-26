@@ -85,6 +85,8 @@ These results return in less than five seconds and returned;
 
 ![](assets/README-f7bc9c11.png)
 
+Someone who is choosing where to live in Illinois and is looking to move to a younger town that might have more of a nightlife could run the query above to determine what the average age is and whether the town or city is the size of their liking.
+
 ## Table Designs
 
 1. US city - built on the codes from airport and demographics
@@ -107,7 +109,7 @@ These results return in less than five seconds and returned;
 
   Cassandra has a unique design;
 
-      "Every node in the cluster has the same role. There is no single point of failure. Data is distributed across the cluster (so each node contains different data), but there is no master as every node can service any request."
+  Every node in the cluster has the same role. There is no single point of failure. Data is distributed across the cluster (so each node contains different data), but there is no master as every node can service any request. - Wikipedia
 
   Cassandra is scalable as both read and write are improved with the addition of machines to the framework with no interruptions to applications.
 
@@ -135,3 +137,5 @@ These results return in less than five seconds and returned;
   I found a very helpful article by Gary A. Stafford ' Running Spark Jobs on Amazon EMR with Apache Airflow'. This artcle is great for learning how to spin up a cluster programatically.
 
   https://itnext.io/running-spark-jobs-on-amazon-emr-with-apache-airflow-2e16647fea0c
+
+  #
