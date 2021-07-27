@@ -12,6 +12,7 @@ spark = SparkSession \
         .getOrCreate()
 
 def parse_state(x):
+    '''strips hyphen'''
     return x.strip().split('-')[-1]
 udf_parse_state = udf(lambda x: parse_state(x), StringType())
 

@@ -123,10 +123,14 @@ Someone who is choosing where to live in Illinois and is looking to move to a yo
 
   In addition to this, the dashboards would freeze and the troubleshooting could begin via the DAGS.
 
+  MWAA does not need a sep instance as it is a fully managed service. 
+
+  The operating cost for a small instance of MWAA is .055 per hour. This would increase with scaling necessities.  
+
 * How could the database be made available to 100+ people?
 
   With Cassandra we could predefine indexes for optimal read queries.
-  We can also scale up as necessary, correct administration of a Cassandra base and this can happen automatically as needed.
+  We can also scale up as necessary, correct administration of a Cassandra base and this can happen automatically as needed. Cassandra can accommodate a massive influx of data automatically, should we choose to use it. Otherwise, s3 is capable of handling large increases of data. Otherwise, EMR can programmatically increase size as needed.
 
 ## ETL
 
@@ -137,5 +141,3 @@ Someone who is choosing where to live in Illinois and is looking to move to a yo
   I found a very helpful article by Gary A. Stafford ' Running Spark Jobs on Amazon EMR with Apache Airflow'. This artcle is great for learning how to spin up a cluster programatically.
 
   https://itnext.io/running-spark-jobs-on-amazon-emr-with-apache-airflow-2e16647fea0c
-
-  #

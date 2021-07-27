@@ -14,24 +14,6 @@ spark = SparkSession \
         .appName("transforms") \
         .getOrCreate()
 
-
-def to_datetime(x):
-    try:
-        start = datetime(1960, 1, 1)
-        return start + timedelta(days=int(x))
-    except:
-        return None
-udf_to_datetime_sas = udf(lambda x: to_datetime(x), DateType())
-
-
-def to_datetimefrstr(x):
-    try:
-        return datetime.strptime(x, '%m%d%Y')
-    except:
-        return None
-udf_to_datetimefrstr = udf(lambda x: to_datetimefrstr(x), DateType())
-
-
 immigrant = spark.read.format('com.github.saurfang.sas.spark')\
                  .load('s3://capstone-mk/i94_immigration_data/i94_{}_sub.sas7bdat'.format(month_year))\
                  .selectExpr('cast(cicid as int) AS cicid', 'cast(i94res as int) AS from_country_code',

@@ -11,6 +11,7 @@ spark = SparkSession \
 
 
 def convert_latitude(x):
+    '''convert latitude'''
     direction = str(x)[-1]
     if direction == 'N':
         return float(str(x)[:-1])
@@ -19,6 +20,7 @@ def convert_latitude(x):
 udf_convert_latitude = udf(lambda x: convert_latitude(x), FloatType())
 
 def convert_longitude(x):
+    '''convert longitude'''
     direction = str(x)[-1]
     if direction == 'E':
         return float(str(x)[:-1])

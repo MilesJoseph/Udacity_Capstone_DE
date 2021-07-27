@@ -11,16 +11,19 @@ spark = SparkSession \
 
 
 def parse_lat(x):
+    '''gathers float value before , '''
     y = x.strip().split(',')
     return float(y[0])
 udf_parse_lat = udf(lambda x: parse_lat(x), FloatType())
 
 def parse_long(x):
+    '''gathers float value after ,'''
     y = x.strip().split(',')
     return float(y[1])
 udf_parse_long = udf(lambda x: parse_long(x), FloatType())
 
 def parse_state(x):
+    '''gathers state value after hyphen'''
     return x.strip().split('-')[-1]
 udf_parse_state = udf(lambda x: parse_state(x), StringType())
 
