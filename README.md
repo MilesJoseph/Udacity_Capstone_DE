@@ -14,11 +14,11 @@
 
   * I94 Immigration Data: This data comes from the US National Tourism and Trade Office. This data records immigration records partitioned by month of every year.
 
-  * World temperature Data: This dataset comes from a Kaggle Source. Includes temperature recordings of cities around the world for a period of time
+  * World temperature Data: This dataset comes from a Kaggle Source. Includes temperature recordings of cities around the world for a period of time. The data size is 8599212 rows.
 
-  * US City Demographic Data: This dataset comes Udacity. This includes data pertaining to city demographics.
+  * US City Demographic Data: This dataset comes Udacity. This includes data pertaining to city demographics. The data size is 2891 rows.
 
-  * Aiport Code table: Source. Includes a collection of airport codes and their respective cities, countries around the world.
+  * Aiport Code table: Source. Includes a collection of airport codes and their respective cities, countries around the world. The data size is 55075 rows.
 
 ## AWS Setup
 

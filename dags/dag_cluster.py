@@ -96,6 +96,19 @@ SPARK_STEPS = [
             ],
         },
     },
+    {
+        "Name": "data_quality_check",
+        "ActionOnFailure": "CANCEL_AND_WAIT",
+        "HadoopJarStep": {
+            "Jar": "command-runner.jar",
+            "Args": [
+                "spark-submit",
+                "--deploy-mode",
+                "client",
+                "s3a://{{ var.value.work_bucket }}/Data_Quality_Check.py",
+            ],
+        },
+    },
 ]
 
 JOB_FLOW_OVERRIDES = {
