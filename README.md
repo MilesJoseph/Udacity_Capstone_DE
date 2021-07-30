@@ -123,7 +123,7 @@ Someone who is choosing where to live in Illinois and is looking to move to a yo
 
   In addition to this, the dashboards would freeze and the troubleshooting could begin via the DAGS.
 
-  MWAA does not need a sep instance as it is a fully managed service. 
+  MWAA does not need a sep instance as it is a fully managed service.
 
   The operating cost for a small instance of MWAA is .055 per hour. This would increase with scaling necessities.  
 
@@ -141,3 +141,5 @@ Someone who is choosing where to live in Illinois and is looking to move to a yo
   I found a very helpful article by Gary A. Stafford ' Running Spark Jobs on Amazon EMR with Apache Airflow'. This artcle is great for learning how to spin up a cluster programatically.
 
   https://itnext.io/running-spark-jobs-on-amazon-emr-with-apache-airflow-2e16647fea0c
+
+#test
