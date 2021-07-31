@@ -107,11 +107,13 @@ Table-US Demographics
 | foreign_born       | int      | NULL       | Total number of foreign born people in the city |
 | city_id            | Text     | Primary_Key       |Unique city identifier |
 
+This table is aggregated by city as opposed to the final table which is individual data against aggregated data. It is also important to note, that each city aggregate in this table will have multiple lines per city as the groupby includes race.
+
 Table-Immigrant
 |  FieldName   | DataType | Constraint  |             Description              |
 |--------------|----------|-------------|--------------------------------------|
 | Cicid        | int      | Primary_Key |         Immigrant identifier         |
-| Country Code | int      | Foreign_key |  Country Identifier                  |
+| From_Country_Code | Text      | Foreign_key |  Country Identifier                  |
 | Age          | int      | NULL        | Age of the immigrant                 |
 | Visa Code    | int      | NULL        | The code fo the via type             |
 | Visa_post    | Text     | NULL        | The date of when the visa was posted |
@@ -119,6 +121,29 @@ Table-Immigrant
 | Visa Type    | Text     | NULL        | The type of visa an immigrant is on  |
 | Birth Year   | Int      | NULL        | The birth year of the immigrant      |
 | Gender       | Text     | NULL        | Gender of the immigrant              |
+
+Table-Immigration Demographics
+(This table is the collection of demographic data from the Table - US Demographics in addition the unique immigrant data. An immigrant could compare there individual stats against specific cities and states. This table would most likely populate a front end look up tool.)
+|     FieldName      | DataType | Constraint  |                       Description                       |
+|--------------------|----------|-------------|---------------------------------------------------------|
+| Cicid              | int      | primary_key | immigrant indentifier                                   |
+| From_country_code  | Text     | Foreign_key | from country identifier                                 |
+| age                | int      | NULL        | age of immigrant                                        |
+| occupation         | Text     | NULL        | occupation of immigrant                                 |
+| gender             | Text     | NULL        | Gender of the immigrant                                 |
+| median_age         | int      | NULL        | Median age of immigrant                                 |
+| avg_household_size | int      | NULL        | average number of persons in a household per city       |
+| race               | Text     | NULL        | race aggregated at the city level                       |
+| male_popualtion    | int      | NULL        | number of male residents aggregated at the city level   |
+| female_populaion   | int      | NULL        | number of female residents aggregated at the city level |
+| total_population   | int      | NULL        | number of total residents aggregated at the city level  |
+| num_vets           | int      | NULL        | Number of veterans in a city                            |
+| foreign_born       | int      | NULL        | Number of immigrants, aggregated at the city level      |
+| city _id           | int      | Foreign_key |city unique identifier |
+
+The constraints above are not absolute or coded specifically, but it could be a best practice should their be a business use case for loading this data into a sql database. 
+
+
 
 
  Some metrics that could be either queried or displayed in a dashboard could include;
