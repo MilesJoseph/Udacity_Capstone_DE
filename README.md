@@ -52,6 +52,18 @@
 
  Anyone with the knowledge and access to the publicly available s3 bucket perform analytics or queries on the data. However, they would need to have the technical understanding to read the parquet files. Ideally, a business intelligence analyst could provide a web UI with embedded dashboards for the people looking to travel or visit U.S. locations.
 
+ I am using star schema for this project. I am doing this because it is easily understood and this data will be publicly available, i.e. more accessible to the everyday user. Queries perform well in a star schema and there is referential integrity between the tables.
+
+ The tables are;
+
+ 1. US city  - built on the codes from airport and demographics
+ 2. US Airport - built using airport data and filtered for the US.
+ 3. US Demographics - built on demographics data.
+ 4. Airport Weather (Denorm) - joining weather data with airport location.
+ 5. Immigrant - Info about individual immigrants, gender, etc.
+ 6. immigration demo (denorm) - info about demographics joined with immigration data to get info about specific cities.
+
+
  Some metrics that could be either queried or displayed in a dashboard could include;
 
 ```python
@@ -67,8 +79,8 @@ spark = SparkSession \
         .getOrCreate()
 
 
-city = spark.read.parquet("s3://de-capstone/lake/city/")
-demo = spark.read.parquet("s3://de-capstone/lake/immigration_demographic/")
+city = spark.read.parquet("s3://capstone-mk/lake/city/")
+demo = spark.read.parquet("s3://capstone-mk/lake/immigration_demographic/")
 
 demo.select("city_id","median_age", "total_population", "foreign_born")\
     .join(city.select("state_code", "city_id", "city"), "city_id")\
@@ -86,16 +98,6 @@ These results return in less than five seconds and returned;
 ![](assets/README-f7bc9c11.png)
 
 Someone who is choosing where to live in Illinois and is looking to move to a younger town that might have more of a nightlife could run the query above to determine what the average age is and whether the town or city is the size of their liking.
-
-## Table Designs
-
-1. US city - built on the codes from airport and demographics
-2. US Airport- built using airport data and filtered for the US.
-3. Weather - built using the global weather data, filtered for US as well.
-4. US Demographics - built on demographics data.
-5. Airport Weather (Denorm) - joining weather data with airport location.
-6. Immigrant - Info about individual immigrants, gender, etc.
-7. immigration demo (denorm) - info about demographics joined with immigration data to get info about specific cities.
 
 ## Considerations
 
@@ -142,10 +144,13 @@ Someone who is choosing where to live in Illinois and is looking to move to a yo
 
   Both checks run within the spark steps. Since I have built a logging function they are included in the dag steps.
 
-  If the checks fail they will be contained in the dag logs. 
+  If the checks fail they will be contained in the dag logs.
 
 ## Attributes
 
   I found a very helpful article by Gary A. Stafford ' Running Spark Jobs on Amazon EMR with Apache Airflow'. This artcle is great for learning how to spin up a cluster programatically.
 
   https://itnext.io/running-spark-jobs-on-amazon-emr-with-apache-airflow-2e16647fea0c
+
+  | test | dumb |
+  | name | 
