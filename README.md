@@ -152,5 +152,6 @@ Someone who is choosing where to live in Illinois and is looking to move to a yo
 
   https://itnext.io/running-spark-jobs-on-amazon-emr-with-apache-airflow-2e16647fea0c
 
-  | test | dumb |
-  | name | 
+| Name |
+|------|
+|some value |
