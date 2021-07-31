@@ -63,6 +63,9 @@
  5. Immigrant - Info about individual immigrants, gender, etc.
  6. immigration demo (denorm) - info about demographics joined with immigration data to get info about specific cities.
 
+
+Data Dictionary
+## Airport 
 | FieldName | Data Type | Constraint  | Description  |
 |-----------|-----------|-------------|--------------|
 | icao_code | Text      | Primary Key | Airport Code |
