@@ -18,5 +18,4 @@ def check(path, table):
 
 
 check("s3a://cappstone-mk/lake/immigrant/", "immigrant")
-check("s3a://capstone-mk/lake/immigration/", "immigration")
 check("s3a://capstone-mk/lake/immigration_demographic/", "immigration_demographic")

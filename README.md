@@ -99,7 +99,7 @@ Someone who is choosing where to live in Illinois and is looking to move to a yo
 
 ## Considerations
 
-  We would most likely want to write the spin up in such a way that the EMR cluster could increase should the size of the data increase.
+  We would most likely want to write the spin up in such a way that the EMR cluster could increase should the size of the data increase. We would want to do this programatically.
 
 ## Scenarios
 
@@ -136,10 +136,12 @@ Someone who is choosing where to live in Illinois and is looking to move to a yo
 
 ![](assets/README-0b071138.png)
 
+## Quality Checks
+
+  I included two quality checks. One pertains to the paraquet files from the csv lake and the other looks at the csv data. I am using a basic check function.
+
 ## Attributes
 
   I found a very helpful article by Gary A. Stafford ' Running Spark Jobs on Amazon EMR with Apache Airflow'. This artcle is great for learning how to spin up a cluster programatically.
 
   https://itnext.io/running-spark-jobs-on-amazon-emr-with-apache-airflow-2e16647fea0c
-
-#test
