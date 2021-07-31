@@ -2,10 +2,16 @@ from pyspark.sql.functions import col
 import pyspark.sql.functions as F
 from pyspark.sql.types import *
 from pyspark.sql.functions import udf
-spark.sparkContext.setLogLevel("WARN")
+
+spark = SparkSession \
+        .builder \
+        .appName("data_qaulity_check") \
+        .getOrCreate()
 
 Logger= spark._jvm.org.apache.log4j.Logger
 mylogger = Logger.getLogger("DAG")
+spark.sparkContext.setLogLevel('WARN')
+
 
 
 def check(path, table):

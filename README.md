@@ -140,6 +140,8 @@ Someone who is choosing where to live in Illinois and is looking to move to a yo
 
   I included two quality checks. One pertains to the paraquet files from the csv lake and the other looks at the csv data. I am using a basic check function.
 
+  Both checks run within the spark steps. Since I have built a logging function they are included in the dag steps. 
+
 ## Attributes
 
   I found a very helpful article by Gary A. Stafford ' Running Spark Jobs on Amazon EMR with Apache Airflow'. This artcle is great for learning how to spin up a cluster programatically.
