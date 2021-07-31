@@ -105,7 +105,20 @@ Table-US Demographics
 | total population   | int      | NULL       | Total number residents                          |
 | num_veterans       | int      | NULL       | Total number of veterans                        |
 | foreign_born       | int      | NULL       | Total number of foreign born people in the city |
-| city_id            | Text     | NULL       |Unique city identifier |
+| city_id            | Text     | Primary_Key       |Unique city identifier |
+
+Table-Immigrant
+|  FieldName   | DataType | Constraint  |             Description              |
+|--------------|----------|-------------|--------------------------------------|
+| Cicid        | int      | Primary_Key |         Immigrant identifier         |
+| Country Code | int      | Foreign_key |  Country Identifier                  |
+| Age          | int      | NULL        | Age of the immigrant                 |
+| Visa Code    | int      | NULL        | The code fo the via type             |
+| Visa_post    | Text     | NULL        | The date of when the visa was posted |
+| Occupation   | Text     | NULL        | Occupation of the immigrant          |
+| Visa Type    | Text     | NULL        | The type of visa an immigrant is on  |
+| Birth Year   | Int      | NULL        | The birth year of the immigrant      |
+| Gender       | Text     | NULL        | Gender of the immigrant              |
 
 
  Some metrics that could be either queried or displayed in a dashboard could include;
