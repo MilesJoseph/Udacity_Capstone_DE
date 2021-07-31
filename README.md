@@ -77,6 +77,37 @@ Table - Airport
 | Airport_long | float     | NULL        | The longitude of the airport               |
 | city_id      | Text      | NULL        |City ID of the aiport |
 
+Table - Airport Weather
+|  FieldName   | DataType | Constraint |             Description              |
+|--------------|----------|------------|--------------------------------------|
+| Name         | Text     | NULL       | Name of the airport                  |
+| elevation_Ft | int      | NULL       | Elevation of the airport             |
+| city         | Text     | NULL       | City the airport is in               |
+| state_code   | Text     | Foreign_key      | State code that the airport is in    |
+| avg_temp     | float    | NULL       | Average Temperature for that airport |
+| sd_temp      | float    | NULL       |The range of the temrpature for that airport (std)|
+
+Table-City
+| FieldName  | DataType | Constraint  |       Description       |
+|------------|----------|-------------|-------------------------|
+| city       | Text     | NULL        | City Name               |
+| City_ID    | Text     | Primary_Key | The identifier for city |
+| state_code | Text     | Foreign_key |The identifier for the state of that city |
+
+Table-US Demographics
+|     FieldName      | DataType | Constraint |                   Description                   |
+|--------------------|----------|------------|-------------------------------------------------|
+| median_age         | float    | NULL       | Median age for that city                        |
+| avg_household_size | float    | NULL       | Average people in a household per city agg      |
+| race               | Text     | NULL       | Race of household                               |
+| male_populaiton    | int      | NULL       | number of male residents                        |
+| female_population  | int      | NULL       | number of female residents                      |
+| total population   | int      | NULL       | Total number residents                          |
+| num_veterans       | int      | NULL       | Total number of veterans                        |
+| foreign_born       | int      | NULL       | Total number of foreign born people in the city |
+| city_id            | Text     | NULL       |Unique city identifier |
+
+
  Some metrics that could be either queried or displayed in a dashboard could include;
 
 ```python
