@@ -140,7 +140,9 @@ Someone who is choosing where to live in Illinois and is looking to move to a yo
 
   I included two quality checks. One pertains to the paraquet files from the csv lake and the other looks at the csv data. I am using a basic check function.
 
-  Both checks run within the spark steps. Since I have built a logging function they are included in the dag steps. 
+  Both checks run within the spark steps. Since I have built a logging function they are included in the dag steps.
+
+  If the checks fail they will be contained in the dag logs. 
 
 ## Attributes
 
