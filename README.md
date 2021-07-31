@@ -63,6 +63,10 @@
  5. Immigrant - Info about individual immigrants, gender, etc.
  6. immigration demo (denorm) - info about demographics joined with immigration data to get info about specific cities.
 
+| FieldName | Data Type | Constraint  | Description  |
+|-----------|-----------|-------------|--------------|
+| icao_code | Text      | Primary Key | Airport Code |
+| Type      | Text      |NULL|Describes the size and type of the airport|
 
  Some metrics that could be either queried or displayed in a dashboard could include;
 
@@ -151,7 +155,3 @@ Someone who is choosing where to live in Illinois and is looking to move to a yo
   I found a very helpful article by Gary A. Stafford ' Running Spark Jobs on Amazon EMR with Apache Airflow'. This artcle is great for learning how to spin up a cluster programatically.
 
   https://itnext.io/running-spark-jobs-on-amazon-emr-with-apache-airflow-2e16647fea0c
-
-| Name |
-|------|
-|some value |
