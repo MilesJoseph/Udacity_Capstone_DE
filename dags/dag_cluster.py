@@ -109,6 +109,19 @@ SPARK_STEPS = [
             ],
         },
     },
+        {
+            "Name": "analytics_check",
+            "ActionOnFailure": "CANCEL_AND_WAIT",
+            "HadoopJarStep": {
+                "Jar": "command-runner.jar",
+                "Args": [
+                    "spark-submit",
+                    "--deploy-mode",
+                    "client",
+                    "s3a://{{ var.value.work_bucket }}/analytics_check.py",
+                ],
+            },
+        },
 ]
 
 JOB_FLOW_OVERRIDES = {
