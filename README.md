@@ -66,11 +66,16 @@
 
 ### Data Dictionary
 
-Airport
-| FieldName | Data Type | Constraint  | Description  |
-|-----------|-----------|-------------|--------------|
-| icao_code | Text      | Primary Key | Airport Code |
-| Type      | Text      |NULL|Describes the size and type of the airport|
+Table - Airport
+|  FieldName   | Data Type | Constraint  |                Description                 |
+|--------------|-----------|-------------|--------------------------------------------|
+| icao_code    | Text      | Primary Key | Airport Code                               |
+| Type         | Text      | NULL        | Describes the size and type of the airport |
+| Name         | Text      | NULL        | Name of the airport                        |
+| elevation_ft | int       | NULL        | The airport's elevation                    |
+| Airport_lat  | float     | NULL        | The latitude of the airport                |
+| Airport_long | float     | NULL        | The longitude of the airport               |
+| city_id      | Text      | NULL        |City ID of the aiport |
 
  Some metrics that could be either queried or displayed in a dashboard could include;
 
